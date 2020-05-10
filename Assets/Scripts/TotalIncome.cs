@@ -5,20 +5,17 @@ using UnityEngine.UI;
 
 public class TotalIncome : MonoBehaviour
 {
-    IceCreamDispenser iceCreamDispenserScript;
-    Text totalIncomeText;
-    static int totalIncome;
+    public Text totalIncomeText;
+    public static int totalIncome;
 
     private void Start()
     {
-        iceCreamDispenserScript = GameObject.Find("Ice Cream Dispenser").GetComponent<IceCreamDispenser>();
-        totalIncomeText = GetComponent<Text>();
-        totalIncomeText.text = ("$" + totalIncome.ToString());
+        totalIncomeText.text = "$" + totalIncome;
     }
 
-    public void AddToBank()
+    public static void AddToBank(int income)
     {
-        totalIncome += iceCreamDispenserScript.income;
+        totalIncome += income;
         print("Total Income So Far Is: " + totalIncome);
     }
 }

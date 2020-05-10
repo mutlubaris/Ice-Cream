@@ -4,10 +4,11 @@ using UnityEngine;
 
 public class Sphere : MonoBehaviour
 {
+    public MeshRenderer dropRenderer;
     public void OnTriggerEnter(Collider other)
     {
-        Material dropMaterial = this.gameObject.GetComponent<MeshRenderer>().material;
-        FindObjectOfType<IceCreamDispenser>().CreateNewLayer(dropMaterial);
+        Material dropMaterial = dropRenderer.material;
+        GameController.instance.CreateNewLayer(dropMaterial);
         Destroy(gameObject);
     }
 }
