@@ -116,7 +116,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 50
+      scalar: 2
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -4718,6 +4718,7 @@ ParticleSystemRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -4765,3 +4766,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5118c55d1ed7ad4094b7dee5f078372, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  levelCompleteVFX: {fileID: 4039879531786379004}

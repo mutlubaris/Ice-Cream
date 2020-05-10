@@ -6,30 +6,39 @@ using UnityEngine.SceneManagement;
 
 public class Panel : MonoBehaviour
 {
-    Vector3 startingPosition;
+    public GameObject levelCompletePanel;
+    public ParticleSystem levelCompleteParticle;
+    public Text income;
+    public Text matchRateText;
+    public Slider slider;
 
     void Start()
     {
-        startingPosition = transform.localPosition;
-        transform.localPosition = new Vector3(1000, 1000);
+        levelCompletePanel.SetActive(false);
     }
 
     void Update()
     {
-        IceCreamDispenser iceCreamDispenserScript = GameObject.Find("Ice Cream Dispenser").GetComponent<IceCreamDispenser>();
-        GetComponentInChildren<Slider>().value = iceCreamDispenserScript.successRate;
+        slider.value = GameController.instance.successRate;
+        matchRateText.text = ("Match Rate: %" + GameController.instance.successRate);
+    }
 
-        Text matchRate = GetComponentInChildren<Text>();
-        matchRate.text = ("Match Rate: %" + iceCreamDispenserScript.successRate);
-
-        if (iceCreamDispenserScript.numberOfLayers == 49)
+    public void UpdateValues(int numberOfLayers)
+    {
+        if (numberOfLayers == 49)
         {
-            transform.localPosition = startingPosition;
-            FindObjectOfType<LevelCompletion>().EmitVFX();
-            FindObjectOfType<Income>().CalculateIncome();
-            FindObjectOfType<TotalIncome>().AddToBank();
-            iceCreamDispenserScript.numberOfLayers++;
+            var incomeAmount = GameController.instance.GetIncome();
+            levelCompletePanel.SetActive(true);
+            GameController.instance.IncrementNumberOfLayers();
+            levelCompleteParticle.Play();
+            UpdateIncomeTexts(incomeAmount);
         }
+    } 
+    
+    private void UpdateIncomeTexts(int amount)
+    {
+        income.text = "$" + amount;
+        TotalIncome.totalIncome += amount;
     }
 
     public void OnMouseButton()

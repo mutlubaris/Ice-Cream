@@ -1,101 +1,84 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class IceCreamDispenser : MonoBehaviour
 {
-    GameObject tap1;
-    GameObject tap2;
+    public Transform tap1Transform;
+    public Transform tap2Transform;
+    public Transform noseTransform;
+    
+    [SerializeField] private GameObject dropPrefab;
+    [SerializeField] private float secondsBetweenDrops = 1f;
+    [SerializeField] private float yDif = 0.1f;
 
-    [SerializeField] GameObject dropPrefab;
-    [SerializeField] float secondsBetweenDrops = 1f;
-    [SerializeField] float yDif = 0.1f;
-
-    public int numberOfLayers = 0;
     public int numberOfDrops = 0;
-    public int successRate = 0;
-    public int income = 0;
 
     public Animator animator;
     public Material lemon;
     public Material chocolate;
 
+    private Material _activeDropMaterial = null; 
+    private Coroutine _activeDropCoroutine;
+
+    private Dictionary<string, Material> _keyToMaterialDict;
+    private Dictionary<string, Transform> _keyToTapDict;
+    
+    private const int MAX_NUMBER_OF_DROPS = 48;
+
     void Start()
     {
-        animator = GetComponent<Animator>();
-        tap1 = gameObject.transform.GetChild(2).gameObject;
-        tap2 = gameObject.transform.GetChild(3).gameObject;
+        _keyToMaterialDict = new Dictionary<string, Material>
+        {
+            {"1", lemon},
+            {"2", chocolate}
+        };
+        
+        _keyToTapDict = new Dictionary<string, Transform>
+        {
+            {"1", tap1Transform},
+            {"2", tap2Transform}
+        };
     }
 
     void Update()
     {
-        
-        if (Input.GetKeyDown("1"))
+        foreach (var key in _keyToMaterialDict.Keys)
         {
-            animator.Play("Dispense");
-            tap1.transform.Rotate(-45, 0, 0);
-            StartCoroutine(SpawnLemonDrops());
-            animator.speed = 1f;
-        }
+            if (Input.GetKeyDown(key) && _activeDropMaterial == null)
+            {
+                animator.Play("Dispense");
+                _keyToTapDict[key].Rotate(-45, 0, 0);
+                _activeDropCoroutine = StartCoroutine(SpawnDrops(_keyToMaterialDict[key]));
+                animator.speed = 1f;
+                _activeDropMaterial = _keyToMaterialDict[key];
+            }
 
-        if (Input.GetKeyUp("1"))
-        {
-            tap1.transform.Rotate(45, 0, 0);
-            animator.speed = 0f;
-            StopAllCoroutines();
+            if (Input.GetKeyUp(key) && _activeDropMaterial == _keyToMaterialDict[key])
+            {
+                _keyToTapDict[key].Rotate(45, 0, 0);
+                animator.speed = 0f;
+                _activeDropMaterial = null;
+                if (_activeDropCoroutine != null)
+                {
+                    StopCoroutine(_activeDropCoroutine);
+                    _activeDropCoroutine = null;
+                }
+            }
         }
-
-        if (Input.GetKeyDown("2"))
-        {
-            animator.Play("Dispense");
-            tap2.transform.Rotate(-45, 0, 0);
-            StartCoroutine(SpawnChocolateDrops());
-            animator.speed = 1f;
-        }
-
-        if (Input.GetKeyUp("2"))
-        {
-            tap2.transform.Rotate(45, 0, 0);
-            animator.speed = 0f;
-            StopAllCoroutines();
-        }
-        income = successRate * 2;
     }
 
-    IEnumerator SpawnLemonDrops()
+    IEnumerator SpawnDrops(Material dropMaterial)
     {
-        while (true && numberOfDrops <= 48)
+        while (numberOfDrops <= MAX_NUMBER_OF_DROPS)
         {
-            GameObject nose = gameObject.transform.GetChild(1).gameObject;
-            Vector3 nosePosition = nose.transform.position;
-            Vector3 spawnPosition = new Vector3(nose.transform.position.x, nose.transform.position.y - yDif, nose.transform.position.z);
+            var nosePosition = noseTransform.position;
+            Vector3 spawnPosition = nosePosition - new Vector3(0, yDif, 0);
             GameObject drop = Instantiate(dropPrefab, spawnPosition, transform.rotation);
-            drop.GetComponent<MeshRenderer>().material = lemon;
+            drop.GetComponent<MeshRenderer>().material = dropMaterial;
             numberOfDrops++;
             yield return new WaitForSeconds(secondsBetweenDrops);
         }
-    }
-
-    IEnumerator SpawnChocolateDrops()
-    {
-        while (true && numberOfDrops <=48)
-        {
-            GameObject nose = gameObject.transform.GetChild(1).gameObject;
-            Vector3 nosePosition = nose.transform.position;
-            Vector3 spawnPosition = new Vector3(nose.transform.position.x, nose.transform.position.y - yDif, nose.transform.position.z);
-            GameObject drop = Instantiate(dropPrefab, spawnPosition, transform.rotation);
-            drop.GetComponent<MeshRenderer>().material = chocolate;
-            numberOfDrops++;
-            yield return new WaitForSeconds(secondsBetweenDrops);
-        }
-    }
-
-    public void CreateNewLayer(Material dropMaterial)
-    {
-        GameObject newLayer = GameObject.Find("Ice Cream Cone").transform.GetChild(numberOfLayers).gameObject;
-        newLayer.GetComponent<MeshRenderer>().enabled = true;
-        if (newLayer.GetComponent<MeshRenderer>().material.color == dropMaterial.color) { successRate += 2; }
-        newLayer.GetComponent<MeshRenderer>().material = dropMaterial;
-        numberOfLayers++;
     }
 }
